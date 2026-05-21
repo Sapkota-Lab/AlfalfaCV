@@ -19,9 +19,9 @@ import requests
 from dotenv import load_dotenv
 
 try:
-    from src.train_model import seed_records_from_contours, summarize_seeds
+    from src.train_model import annotate, segment_seeds, seed_records_from_contours, summarize_seeds
 except ImportError:  # Allows direct execution from inside src/
-    from train_model import seed_records_from_contours, summarize_seeds
+    from train_model import annotate, segment_seeds, seed_records_from_contours, summarize_seeds
 
 
 env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
@@ -94,6 +94,45 @@ def call_roboflow(image_path: str, model_id: str) -> dict[str, Any]:
     )
     response.raise_for_status()
     return response.json()
+
+
+def _local_whole_seed_detection(
+    image: np.ndarray,
+    options: WholeSeedDetectionOptions,
+) -> dict[str, Any]:
+    """Use the local OpenCV pipeline when Roboflow is unavailable."""
+    mask, seeds = segment_seeds(image, min_area_px=options.min_area_px)
+    summary = summarize_seeds(seeds, mm_per_pixel=options.mm_per_pixel)
+
+    if options.mm_per_pixel and options.mm_per_pixel > 0:
+        summary = filter_summary_by_area(
+            summary,
+            options.min_area_mm2,
+            options.max_area_mm2,
+        )
+
+    masked_image = apply_mask_to_image(image, mask)
+    overlay = annotate(image, summary)
+
+    return {
+        "original": image,
+        "mask": masked_image,
+        "binary_mask": mask,
+        "overlay": overlay,
+        "summary": summary,
+        "raw_mask": mask,
+        "raw_result": None,
+        "diagnostics": {
+            "prediction_count": 0,
+            "unfiltered_seed_count": len(summary),
+            "displayed_seed_count": len(summary),
+            "area_filter_removed_all": False,
+            "prediction_shape": image.shape[:2],
+            "image_shape": image.shape[:2],
+            "fallback_mode": "local_cv",
+            "roboflow_available": False,
+        },
+    }
 
 
 def extract_mask_from_predictions(
@@ -355,6 +394,10 @@ def run_whole_seed_detection(
     image = cv2.imread(image_path)
     if image is None:
         raise ValueError(f"Could not read image: {image_path}")
+
+    api_key = os.getenv("ROBOFLOW_API_KEY")
+    if not api_key:
+        return _local_whole_seed_detection(image, options)
 
     result = call_roboflow(image_path, _selected_model(options))
     prediction_shape = prediction_image_shape(result, image.shape)
