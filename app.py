@@ -381,6 +381,8 @@ def server(input_data, output, _session):
                     <tr style="background-color: #f0f0f0;">
                         <th class="seed-id">Seed #</th>
                         <th>Area ({unit_area})</th>
+                        <th>Major Axis ({unit_size})</th>
+                        <th>Minor Axis ({unit_size})</th>
                         <th>Eq.Diam ({unit_size})</th>
                         <th>Perimeter ({unit_size})</th>
                         <th>AR</th>
@@ -396,6 +398,10 @@ def server(input_data, output, _session):
                 if has_calibration:
                     area_val = (seed['area_mm2'] if seed['area_mm2']
                                 is not None else seed['area_px'])
+                    major_val = (seed['major_mm'] if seed['major_mm']
+                                 is not None else seed['major_px'])
+                    minor_val = (seed['minor_mm'] if seed['minor_mm']
+                                 is not None else seed['minor_px'])
                     diam_val = (seed['eq_diam_mm'] if seed['eq_diam_mm']
                                 is not None else seed['eq_diam_px'])
                     perim_val = (seed['perimeter_mm']
@@ -403,12 +409,18 @@ def server(input_data, output, _session):
                                  else seed['perimeter_px'])
                     area_fmt = (f"{area_val:.3f}" if seed['area_mm2']
                                 is not None else f"{area_val:.1f}")
+                    major_fmt = (f"{major_val:.3f}" if seed['major_mm']
+                                 is not None else f"{major_val:.2f}")
+                    minor_fmt = (f"{minor_val:.3f}" if seed['minor_mm']
+                                 is not None else f"{minor_val:.2f}")
                     diam_fmt = (f"{diam_val:.3f}" if seed['eq_diam_mm']
                                 is not None else f"{diam_val:.2f}")
                     perim_fmt = (f"{perim_val:.3f}" if seed['perimeter_mm']
                                  is not None else f"{perim_val:.2f}")
                 else:
                     area_fmt = f"{seed['area_px']:.1f}"
+                    major_fmt = f"{seed['major_px']:.2f}"
+                    minor_fmt = f"{seed['minor_px']:.2f}"
                     diam_fmt = f"{seed['eq_diam_px']:.2f}"
                     perim_fmt = f"{seed['perimeter_px']:.2f}"
 
@@ -416,6 +428,8 @@ def server(input_data, output, _session):
                     <tr>
                         <td class="seed-id">{idx}</td>
                         <td>{area_fmt}</td>
+                        <td>{major_fmt}</td>
+                        <td>{minor_fmt}</td>
                         <td>{diam_fmt}</td>
                         <td>{perim_fmt}</td>
                         <td>{seed['aspect_ratio']:.3f}</td>
