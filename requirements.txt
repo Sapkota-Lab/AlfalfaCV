@@ -1,5 +1,6 @@
-opencv-python>=4.9.0
+opencv-contrib-python>=4.9.0,<5.0
 numpy>=1.26.0
+colour-science>=0.4.6
 shiny>=0.6.0
 python-dotenv>=1.0.0
 requests>=2.31.0
