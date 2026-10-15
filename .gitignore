@@ -36,3 +36,14 @@ env/
 # Project specific
 outputs/
 .env
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+renv/library/
+renv/staging/
+
+# OS
+.DS_Store
