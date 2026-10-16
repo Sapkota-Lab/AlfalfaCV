@@ -2,136 +2,110 @@
 
 AlfalfaCV is an R Shiny research application for analyzing morphological characteristics of alfalfa breeds using computer vision. Each breed is identified by an accession identifier (`PI_` or `W6_`).
 
-**Current milestone:** USDA Display Draft (Phase 1A) — seed image upload and display foundation.
+**Current milestone:** USDA Display Draft  
+**Current phase:** Phase 1B — Computer Vision Foundation (ROI + seed detection)
 
-> Seed detection, calibration, and morphological measurements are **not** implemented in Phase 1A.
+> Physical measurements, calibration, and shape classification are **not** implemented in Phase 1B.
 
-## USDA Display Draft scope
+## Scope
 
-Phase 1A focuses exclusively on establishing a maintainable application foundation for seed images:
+Phase 1B adds seed computer-vision foundations on top of Phase 1A upload/display:
 
-- Launch the app locally
-- Upload a single JPEG or PNG seed image
-- Extract the accession identifier from the filename
-- Display the uploaded image with metadata
-- Provide empty placeholders for future detection, measurements, and statistics
-
-No scientific analysis results are produced in this phase.
-
-## Current Phase 1A functionality
-
-| Feature | Status |
-|---|---|
-| Local Shiny launch | Implemented |
-| Single-image upload (JPEG/PNG) | Implemented |
-| Accession filename validation (`PI` / `W6`) | Implemented |
-| Image preview (aspect ratio preserved) | Implemented |
-| Session-scoped upload state | Implemented |
-| Header-only image dimension reading | Implemented |
-| Seed detection | Not implemented |
-| Morphological measurements | Not implemented |
-| Statistical summaries | Not implemented |
-| Calibration / ruler detection | Not implemented |
+- Automatic seed ROI initialization
+- Interactive ROI adjustment (brush)
+- Downscaled previews + original-resolution ROI crops
+- Background-aware seed segmentation (no fixed hue, no ML)
+- Connected-component candidate detection
+- Numbered detection overlays and counts
+- Adjustable sensitivity / area filters
 
 ## Project structure
 
 ```text
 AlfalfaCV/
-├── app.R                 # Shiny application entry point
+├── app.R                      # Shiny orchestration
 ├── R/
-│   └── image_io.R        # Filename validation and image metadata helpers
-├── www/                  # Static web assets (reserved)
+│   ├── image_io.R             # Upload validation / header metadata
+│   ├── roi.R                  # ROI defaults, validation, coordinates
+│   ├── image_processing.R     # magick previews and ROI crops
+│   └── seed_detection.R       # Segmentation and detections
 ├── tests/
-│   ├── fixtures/         # Synthetic UI-testing image (not research data)
-│   ├── testthat/         # Automated unit tests
-│   └── testthat.R
-├── scripts/
-│   └── create_synthetic_fixture.R
+│   ├── fixtures/PI_100001.png # Synthetic UI fixture
+│   └── testthat/
+├── scripts/create_synthetic_fixture.R
 └── README.md
 ```
 
-A legacy Python prototype (`src/`, `app.py`, `Images/`) may also be present in the repository. It is outside Phase 1A scope and is not used by the Shiny application.
+A legacy Python prototype may also exist in the repository; it is unused by this Shiny app.
 
-## Installation requirements
+## Installation
 
 1. Install [R](https://cran.r-project.org/) (4.2+ recommended).
-2. Install required packages:
+2. Install system ImageMagick (required by the `magick` package), e.g. on macOS:
 
-```r
-install.packages(c("shiny", "bslib", "testthat"))
+```bash
+brew install imagemagick
 ```
 
-Optional (fixture generation only):
+3. Install R packages:
 
 ```r
-install.packages("png")
+install.packages(c("shiny", "bslib", "magick", "mmand", "testthat"))
 ```
+
+Optional (fixture generation): `install.packages("png")`
 
 ### Required R packages
 
 | Package | Purpose |
 |---|---|
 | `shiny` | Application framework |
-| `bslib` | Modern Bootstrap-themed UI |
-| `testthat` | Lightweight automated tests |
+| `bslib` | UI layout/theme |
+| `magick` | Efficient image load, resize, crop |
+| `mmand` | Morphology + connected components |
+| `testthat` | Automated tests |
 
-No Python, reticulate, databases, authentication, or external APIs are required for Phase 1A.
+## Launch
 
-## How to launch the application
-
-From the project root (`AlfalfaCV/`):
+From the project root:
 
 ```r
 shiny::runApp(".")
 ```
 
-Or from a terminal:
+Or:
 
 ```bash
 Rscript -e 'shiny::runApp(".", launch.browser = TRUE)'
 ```
 
-The application runs locally in your browser. Uploaded images remain in the current Shiny session only and are not saved into permanent project directories.
+Uploaded images remain session-scoped and are not saved permanently into the project.
 
-## Supported image formats
-
-- `.jpg` / `.jpeg`
-- `.png`
-
-One image may be uploaded at a time. Maximum upload size is configured at 50 MB.
-
-## Expected filename convention
-
-Filenames must begin with an accession prefix and number:
+## Filename convention
 
 ```text
 PI_<digits>[optional_suffix].jpg|jpeg|png
 W6_<digits>[optional_suffix].jpg|jpeg|png
 ```
 
-Examples:
+Examples: `PI_227393_85i_120.jpg` → `PI_227393`
 
-- `PI_123456.jpg` → accession `PI_123456`
-- `PI_227393_85i_120.jpg` → accession `PI_227393`
-- `W6_123456_85i_120.png` → accession `W6_123456`
+## Typical workflow
 
-Prefixes are matched case-insensitively and normalized to uppercase. Optional underscore-separated suffix components must be nonempty and alphanumeric. The original filename is always preserved. If the filename is invalid, a readable image may still be previewed, but the accession identifier is shown as unavailable.
+1. Upload a seed image
+2. Inspect the default ROI (cyan rectangle)
+3. Optionally enable **Adjust ROI** and brush a new rectangle; or **Reset ROI**
+4. Adjust detection sensitivity / area filters if needed
+5. Click **Run Seed Detection**
+6. Inspect numbered overlays in the ROI preview and the detection count
 
-## Synthetic test fixture
+## Segmentation notes
 
-```bash
-Rscript scripts/create_synthetic_fixture.R
-```
+Detection uses a dark-background-aware color-distance **and** luminance threshold, light morphological opening, connected-component labeling, and contrast filtering. It does **not** assume yellow seeds. Results are seed *candidates*, not scientifically validated seeds.
 
-This writes `tests/fixtures/PI_100001.png`. It is **not** a scientific reference. The application does not depend on this fixture.
+Default controls are conservative (sensitivity `0.05`, max area fraction `0.24`, ROI-aware minimum area). Images are loaded with EXIF orientation applied. Previews are drawn with top-left origin and y-down coordinates so ROI overlays match crops.
 
-## Running tests
-
-```r
-testthat::test_dir("tests/testthat")
-```
-
-Or:
+## Tests
 
 ```bash
 Rscript tests/testthat.R
@@ -139,18 +113,14 @@ Rscript tests/testthat.R
 
 ## Current limitations
 
-- No seed detection, segmentation, or overlays
-- No calibration (palette or ruler)
-- No morphological or statistical calculations
-- No CSV export, batch processing, or persistent storage
-- No leaf, pod, or whole-plant workflows
-- Browser display of very large images may still be slow even though server-side metadata reading is header-only
-- GUI interactions are not covered by automated tests
+- No ruler/palette calibration
+- No physical measurements or statistics
+- No manual boundary correction
+- Very large ROIs still allocate full ROI pixel arrays for segmentation
+- Browser display of huge originals may remain slow
+- Detection quality depends on ROI placement and parameters
 
-## Planned future phases
+## Planned next phases
 
-- **Phase 1B+:** Seed detection / segmentation for seed images
-- Calibration using palette and ruler references
-- Individual morphological measurements and statistical summaries
-- Manual correction tools in the image workspace
-- Later category support: leaves, pods, and whole plants
+- Phase 1C: calibration and morphological measurements
+- Later: leaves, pods, whole plants

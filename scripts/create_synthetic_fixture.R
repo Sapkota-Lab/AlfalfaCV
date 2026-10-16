@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
-# Create a synthetic seed-layout fixture for UI testing only.
-# Not a scientific reference image. The Shiny app does not depend on this file.
+# Synthetic seed-layout fixture for UI / detection smoke testing.
+# Not a scientific reference. The Shiny app does not depend on this file.
 
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
@@ -21,87 +21,73 @@ if (!requireNamespace("png", quietly = TRUE)) {
 
 width <- 800L
 height <- 500L
-
-# RGB array, values in [0, 1]. Start with black background.
 img <- array(0, dim = c(height, width, 3))
 
-# Left color calibration palette (vertical swatches).
+# Left color calibration palette
 palette_colors <- matrix(
   c(
-    1.00, 0.00, 0.00,
-    0.00, 1.00, 0.00,
-    0.00, 0.00, 1.00,
-    1.00, 1.00, 0.00,
-    1.00, 1.00, 1.00,
-    0.50, 0.50, 0.50,
-    0.20, 0.60, 0.20,
-    0.80, 0.40, 0.10
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
+    1, 1, 0,
+    1, 1, 1,
+    0.5, 0.5, 0.5,
+    0.2, 0.6, 0.2,
+    0.8, 0.4, 0.1
   ),
-  ncol = 3,
-  byrow = TRUE
+  ncol = 3, byrow = TRUE
 )
-
-swatch_h <- 40L
-swatch_w <- 50L
-palette_x0 <- 20L
-palette_y0 <- 40L
 for (i in seq_len(nrow(palette_colors))) {
-  y1 <- palette_y0 + (i - 1L) * (swatch_h + 8L)
-  y2 <- y1 + swatch_h - 1L
-  x1 <- palette_x0
-  x2 <- palette_x0 + swatch_w - 1L
-  img[y1:y2, x1:x2, 1] <- palette_colors[i, 1]
-  img[y1:y2, x1:x2, 2] <- palette_colors[i, 2]
-  img[y1:y2, x1:x2, 3] <- palette_colors[i, 3]
+  y1 <- 40L + (i - 1L) * 48L
+  y2 <- y1 + 39L
+  img[y1:y2, 20:69, 1] <- palette_colors[i, 1]
+  img[y1:y2, 20:69, 2] <- palette_colors[i, 2]
+  img[y1:y2, 20:69, 3] <- palette_colors[i, 3]
 }
 
-# Three rows of seed-like ellipses in the center.
+# Seeds placed inside the default Phase 1B ROI band (~0.58–0.65 width).
 set.seed(100001)
-seed_color <- c(0.72, 0.58, 0.28)
-row_ys <- c(120L, 220L, 320L)
-for (ry in row_ys) {
-  xs <- as.integer(seq(160, 620, length.out = 10))
-  for (sx in xs) {
-    rx <- sample(6:9, 1)
-    ry_r <- sample(4:7, 1)
-    yy <- max(1L, ry - ry_r):min(height, ry + ry_r)
-    xx <- max(1L, sx - rx):min(width, sx + rx)
-    for (y in yy) {
-      for (x in xx) {
-        if (((x - sx) / rx)^2 + ((y - ry) / ry_r)^2 <= 1) {
-          jitter <- runif(1, 0.85, 1.05)
-          img[y, x, 1] <- min(1, seed_color[1] * jitter)
-          img[y, x, 2] <- min(1, seed_color[2] * jitter)
-          img[y, x, 3] <- min(1, seed_color[3] * jitter)
+seed_xs <- as.integer(seq(480, 510, length.out = 2))
+seed_ys <- c(80L, 160L, 240L, 320L)
+seed_colors <- list(
+  c(0.85, 0.70, 0.25),
+  c(0.25, 0.75, 0.40),
+  c(0.80, 0.35, 0.55),
+  c(0.90, 0.88, 0.20)
+)
+for (ri in seq_along(seed_ys)) {
+  for (sx in seed_xs) {
+    col <- seed_colors[[((ri + sx) %% length(seed_colors)) + 1L]]
+    rx <- 9L
+    ry <- 6L
+    ry0 <- seed_ys[[ri]]
+    for (y in (ry0 - ry):(ry0 + ry)) {
+      for (x in (sx - rx):(sx + rx)) {
+        if (x < 1 || x > width || y < 1 || y > height) next
+        if (((x - sx) / rx)^2 + ((y - ry0) / ry)^2 <= 1) {
+          img[y, x, 1] <- col[[1]]
+          img[y, x, 2] <- col[[2]]
+          img[y, x, 3] <- col[[3]]
         }
       }
     }
   }
 }
 
-# White circular row markers on the right.
-marker_x <- 740L
-for (ry in row_ys) {
-  rr <- 10L
-  yy <- (ry - rr):(ry + rr)
-  xx <- (marker_x - rr):(marker_x + rr)
-  for (y in yy) {
-    for (x in xx) {
-      if ((x - marker_x)^2 + (y - ry)^2 <= rr^2) {
-        img[y, x, ] <- 1
-      }
+# White row markers on the right (outside default ROI)
+for (ry in seed_ys) {
+  for (y in (ry - 10):(ry + 10)) {
+    for (x in (740 - 10):(740 + 10)) {
+      if ((x - 740)^2 + (y - ry)^2 <= 100) img[y, x, ] <- 1
     }
   }
 }
 
-# Bottom ruler with millimeter tick marks.
-ruler_y1 <- 450L
-ruler_y2 <- 480L
-img[ruler_y1:ruler_y2, 100:700, ] <- 0.92
+# Bottom ruler
+img[450:480, 100:700, ] <- 0.92
 for (tick in seq(100L, 700L, by = 10L)) {
   tick_h <- if ((tick - 100L) %% 50L == 0L) 28L else 14L
-  y_top <- ruler_y2 - tick_h
-  img[y_top:ruler_y2, tick, ] <- 0.05
+  img[(480L - tick_h):480L, tick, ] <- 0.05
 }
 
 png::writePNG(img, out_path)
