@@ -4,6 +4,8 @@ test_that("required application files exist", {
   expect_true(file.exists(file.path(project_root, "R", "roi.R")))
   expect_true(file.exists(file.path(project_root, "R", "image_processing.R")))
   expect_true(file.exists(file.path(project_root, "R", "seed_detection.R")))
+  expect_true(file.exists(file.path(project_root, "R", "ruler_calibration.R")))
+  expect_true(file.exists(file.path(project_root, "R", "morphology.R")))
   expect_true(file.exists(file.path(project_root, "README.md")))
 })
 

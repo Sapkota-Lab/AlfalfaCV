@@ -147,6 +147,37 @@ rgb_array_to_raster <- function(rgb) {
   grDevices::as.raster(rgb)
 }
 
+#' CSS pixel height for a Shiny plotOutput that preserves image aspect ratio.
+#'
+#' Computes height from assumed_width × (img_h/img_w), clamped to
+#' [min_height, max_height]. Used with asp=1 rendering so images are not
+#' stretched to fill a mismatched fixed-height canvas.
+preview_display_height_px <- function(
+    img_width,
+    img_height,
+    max_height = 360,
+    assumed_width = 640,
+    min_height = 80
+) {
+  # NULL / length-0 inputs become numeric(0); a bare if (!is.finite(...))
+  # then errors with "missing value where TRUE/FALSE needed".
+  if (is.null(img_width) || is.null(img_height) ||
+        length(img_width) != 1L || length(img_height) != 1L) {
+    return(as.integer(max_height))
+  }
+  w <- suppressWarnings(as.numeric(img_width))
+  h <- suppressWarnings(as.numeric(img_height))
+  if (length(w) != 1L || length(h) != 1L ||
+        !isTRUE(is.finite(w)) || !isTRUE(is.finite(h)) ||
+        !isTRUE(w > 0) || !isTRUE(h > 0)) {
+    return(as.integer(max_height))
+  }
+  aspect <- h / w
+  target <- as.numeric(assumed_width) * aspect
+  target <- min(as.numeric(max_height), max(as.numeric(min_height), target))
+  as.integer(round(target))
+}
+
 #' Plot an image raster in top-left origin, y-down coordinates.
 #'
 #' Uses rasterImage() instead of plot.raster() + inverted ylim, because
@@ -155,6 +186,9 @@ rgb_array_to_raster <- function(rgb) {
 #'
 #' Axes use xaxs/yaxs = "i" so data coordinates map exactly onto the
 #' drawn image (no default 4% padding drift).
+#'
+#' `asp = 1` preserves the native pixel aspect ratio: one data unit in x and
+#' y occupies the same physical length on the device.
 #'
 #' @param ras raster object (row 1 = top)
 #' @param width,height Pixel dimensions matching the raster
@@ -167,7 +201,7 @@ plot_image_topleft <- function(ras, width, height) {
     ylim = c(h, 0),
     xaxs = "i",
     yaxs = "i",
-    asp = NA,
+    asp = 1,
     axes = FALSE,
     xlab = "",
     ylab = "",

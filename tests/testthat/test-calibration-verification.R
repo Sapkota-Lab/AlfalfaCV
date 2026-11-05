@@ -1,0 +1,11 @@
+test_that("automatic calibration is not part of the application", {
+  app_src <- paste(readLines(file.path(project_root, "app.R")), collapse = "\n")
+  cal_src <- paste(readLines(file.path(project_root, "R", "ruler_calibration.R")), collapse = "\n")
+  expect_false(exists("calibrate_ruler_auto", mode = "function"))
+  expect_false(grepl("calibrate_ruler_auto", cal_src))
+  expect_false(grepl("calibrate_ruler_auto", app_src))
+  expect_false(grepl("input\\$auto_calibrate", app_src))
+  expect_false(grepl("manual_cal_mode", app_src))
+  expect_false(grepl("Auto-Calibrate", app_src))
+  expect_false(file.exists(file.path(project_root, "R", "calibration_debug.R")))
+})

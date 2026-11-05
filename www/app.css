@@ -1,0 +1,656 @@
+/* AlfalfaCV workspace shell: persistent nav + three edge-to-edge panes. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+body.bslib-page-fill {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background: #fff;
+  transition: grid-template-columns 140ms ease;
+}
+
+.app-shell.sidebar-collapsed {
+  grid-template-columns: 44px minmax(0, 1fr);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell {
+    transition: none;
+  }
+}
+
+.app-nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: #f4f6f3;
+  border-right: 1px solid #d0d7de;
+}
+
+.app-nav-expanded {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+.app-shell.sidebar-collapsed .app-nav {
+  overflow: hidden;
+}
+
+.app-shell.sidebar-collapsed .app-nav-expanded {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sidebar-rail {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.65rem 0.2rem;
+}
+
+.app-shell.sidebar-collapsed .sidebar-rail {
+  display: flex;
+}
+
+.app-nav-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 0.75rem 0.45rem 0.75rem 0.85rem;
+  border-bottom: 1px solid #d0d7de;
+}
+
+.sidebar-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: #5c675c;
+  cursor: pointer;
+}
+
+.sidebar-toggle:hover,
+.sidebar-toggle:focus-visible {
+  background: rgba(44, 95, 45, 0.1);
+  color: #2c5f2d;
+  outline: none;
+}
+
+.app-brand {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #2c5f2d;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.nav-footer {
+  margin-top: auto;
+  padding: 0.75rem 0.85rem 1rem;
+  border-top: 1px solid #d0d7de;
+}
+
+.nav-footer .shiny-input-container {
+  margin-bottom: 0;
+}
+
+.nav-footer .checkbox label {
+  color: #243028;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.workflow-nav {
+  padding: 0.85rem 0.55rem 1rem;
+}
+
+.workflow-nav .shiny-input-container {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.workflow-nav .control-label {
+  display: block;
+  margin: 0 0 0.4rem;
+  padding: 0 0.65rem;
+  color: #5c675c;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.workflow-nav .shiny-options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.workflow-nav .radio {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.workflow-nav .radio label {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 0.42rem 0.7rem;
+  border-radius: 0.35rem;
+  color: #243028;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.workflow-nav .radio input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.workflow-nav .radio label:hover {
+  background: rgba(44, 95, 45, 0.06);
+}
+
+.workflow-nav .radio:has(input:checked) label {
+  background: rgba(44, 95, 45, 0.12);
+  color: #2c5f2d;
+  font-weight: 700;
+}
+
+.workflow-nav .radio:focus-within label {
+  outline: 2px solid #4a6fa5;
+  outline-offset: 1px;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+.app-main > div {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.app-stage {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 2.15fr) minmax(230px, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pane {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  background: #fff;
+  border-right: 1px solid #d0d7de;
+  border-radius: 0;
+}
+
+.pane:last-child {
+  border-right: none;
+}
+
+.pane-body {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1rem 1rem 1.5rem;
+}
+
+.pane-input {
+  overflow-x: hidden;
+}
+
+.pane-input table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+}
+
+.pane-workspace {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.pane-workspace > .pane-body {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.pane-workspace > .pane-body > .shiny-html-output {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: visible;
+}
+
+.pane .shiny-input-container,
+.pane .form-control,
+.pane .input-group,
+.pane .irs {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.pane .input-group > .form-control {
+  min-width: 0;
+  flex: 1 1 auto;
+  width: 1%;
+}
+
+.pane hr {
+  margin: 0.85rem 0;
+  border: 0;
+  border-top: 1px solid #e1e6eb;
+  opacity: 1;
+}
+
+.section-label {
+  margin-top: 0.15rem;
+  margin-bottom: 0.45rem;
+  color: #243028;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.meta-table,
+.cal-table {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.meta-table td,
+.cal-table td {
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+.meta-table td:first-child {
+  width: 42%;
+  color: #334;
+  font-weight: 600;
+}
+
+.cal-table td:first-child {
+  width: 48%;
+  font-weight: 600;
+}
+
+.plot-frame {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem;
+  overflow: visible;
+  border: 1px solid #d0d7de;
+  border-radius: 0.35rem;
+  background: #111;
+}
+
+.plot-frame .shiny-plot-output {
+  max-width: 100%;
+}
+
+.empty-state {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 2rem 1rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+.empty-state h5 {
+  margin-bottom: 0.35rem;
+  color: #243028;
+}
+
+.result-section {
+  max-width: 100%;
+  min-width: 0;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #e6ebf0;
+}
+
+.result-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.result-section h5 {
+  margin: 0 0 0.45rem;
+  color: #243028;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.result-section .shiny-bound-output {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.pane-results {
+  overflow-x: hidden;
+}
+
+.result-section table {
+  width: max-content;
+  min-width: 100%;
+  margin-bottom: 0;
+}
+
+.status-ready { color: #2c5f2d; font-weight: 600; }
+.status-warn { color: #9a6700; font-weight: 600; }
+.status-error { color: #8b3a3a; font-weight: 600; }
+.status-empty { color: #6c757d; font-weight: 600; }
+
+.workflow-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+.workflow-pending h2 {
+  margin: 0 0 0.35rem;
+  color: #2c5f2d;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.workflow-pending p {
+  margin: 0;
+}
+
+.plot-stage {
+  position: relative;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0;
+  line-height: 0;
+}
+
+.plot-stage .shiny-plot-output {
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  line-height: 0;
+  background: transparent;
+}
+
+.plot-stage .shiny-plot-output img,
+.plot-stage .shiny-plot-output img.shiny-scalable {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: none !important;
+  object-fit: contain;
+}
+
+/* Tall ROI crops stay inside the previous 420px preview cap. object-fit: contain
+   scales the whole bitmap, overlays included, and centers it. Side space is
+   unused rather than stretching or cropping. The workspace column still scrolls. */
+.plot-stage.plot-stage-roi.is-tall {
+  height: 420px;
+  max-height: 420px;
+  overflow: hidden;
+}
+
+.plot-stage.plot-stage-roi.is-tall .shiny-plot-output {
+  height: 420px !important;
+  max-height: 420px !important;
+  overflow: hidden !important;
+  background: #111;
+}
+
+.plot-stage.plot-stage-roi.is-tall .shiny-plot-output img,
+.plot-stage.plot-stage-roi.is-tall .shiny-plot-output img.shiny-scalable {
+  position: static;
+  display: block;
+  width: 100% !important;
+  height: 420px !important;
+  max-width: 100%;
+  max-height: 420px !important;
+  object-fit: contain !important;
+  object-position: center center;
+}
+
+.plot-stage > .shiny-html-output {
+  position: static;
+  display: block;
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.interaction-layer {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  /* Vertical pans scroll the workspace. Mouse drags still edit the ROI. */
+  touch-action: pan-y;
+}
+
+.interaction-layer[data-cal-mode="idle"],
+.interaction-layer[data-cal-mode="confirm"] {
+  pointer-events: none;
+}
+
+.interaction-layer[data-cal-mode="first"],
+.interaction-layer[data-cal-mode="second"] {
+  cursor: crosshair;
+}
+
+.roi-box {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #00e5ff;
+  background: rgba(0, 229, 255, 0.08);
+  cursor: move;
+}
+
+.roi-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 1.5px solid #00e5ff;
+}
+
+.roi-handle.nw { top: -4px; left: -4px; cursor: nwse-resize; }
+.roi-handle.ne { top: -4px; right: -4px; cursor: nesw-resize; }
+.roi-handle.sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+.roi-handle.se { right: -4px; bottom: -4px; cursor: nwse-resize; }
+.roi-handle.n { top: -4px; left: 50%; margin-left: -4px; cursor: ns-resize; }
+.roi-handle.s { bottom: -4px; left: 50%; margin-left: -4px; cursor: ns-resize; }
+.roi-handle.e { top: 50%; right: -4px; margin-top: -4px; cursor: ew-resize; }
+.roi-handle.w { top: 50%; left: -4px; margin-top: -4px; cursor: ew-resize; }
+
+.roi-draft {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #00e5ff;
+  background: rgba(0, 229, 255, 0.12);
+  pointer-events: none;
+}
+
+.roi-menu {
+  position: fixed;
+  z-index: 30;
+  display: none;
+  min-width: 8.5rem;
+  padding: 0.25rem;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 0.35rem;
+  box-shadow: 0 4px 16px rgba(36, 48, 40, 0.12);
+}
+
+.roi-menu.is-open {
+  display: block;
+}
+
+.roi-menu button {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #243028;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roi-menu button:hover,
+.roi-menu button:focus-visible {
+  background: rgba(44, 95, 45, 0.08);
+  color: #2c5f2d;
+  outline: none;
+}
+
+.cal-guide-line {
+  position: absolute;
+  height: 2px;
+  pointer-events: none;
+}
+
+.cal-popover {
+  position: absolute;
+  z-index: 4;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.55rem 0.65rem;
+  transform: translate(-50%, 10px);
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 0.4rem;
+  box-shadow: 0 6px 18px rgba(36, 48, 40, 0.14);
+  color: #243028;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  pointer-events: auto;
+}
+
+.cal-popover p {
+  margin: 0 0 0.35rem;
+}
+
+.cal-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.cal-compact p {
+  margin: 0;
+}
+
+.cal-note {
+  margin: 0.15rem 0 0.85rem;
+  color: #5c675c;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.workspace-hint {
+  margin: 0 0 0.55rem;
+  color: #5c675c;
+  font-size: 0.8rem;
+}
+
+.debug-panel {
+  margin-top: 0.4rem;
+  padding-top: 0.2rem;
+}

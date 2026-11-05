@@ -35,6 +35,8 @@ env/
 
 # Project specific
 outputs/
+calibration_debug/
+alfalfacv_calibration_debug/
 .env
 
 # R
@@ -44,6 +46,8 @@ outputs/
 *.Rproj
 renv/library/
 renv/staging/
+Rplots.pdf
+tests/testthat/Rplots.pdf
 
 # OS
 .DS_Store
