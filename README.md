@@ -57,7 +57,7 @@ Example: `PI_227393_85i_120.jpg` is accession `PI_227393`. Parsing uses the base
 
 ## Seed workflow
 
-1. Choose **Seeds** and upload a JPEG or PNG.
+1. Choose **Seeds** and upload a JPEG or PNG. The progress bar stays visible while the file uploads and the image is prepared. It clears when that finishes. A successful upload shows **Ready — Image uploaded**. A failed upload shows an error instead of a stuck progress bar. The same control replaces the current image.
 2. On the full image, drag to draw a region of interest. Drag the box to move it, or drag a handle to resize it. Coordinates are stored in original-image pixels. Right-click inside the region and choose **Reset ROI** to restore the default region. Right-clicking outside the region does not reset it.
 3. Open the ruler preview below the ROI preview. Choose **Calibrate**, click the first mark, then click a second mark to its right. The guide stays horizontal. The reference distance is fixed at 10 mm. Confirm, retry, or cancel. Confirm stores `pixels_per_mm = (x2 - x1) / 10`. **Recalibrate** starts a new selection and keeps the previous confirmed scale until the new one is confirmed. Cancel and retry do not replace a confirmed scale.
 4. Choose **Run Seed Detection**. Pixel measurements are available before calibration. Millimetre measurements appear only after a confirmed 10 mm scale for the current image.

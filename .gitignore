@@ -25,6 +25,10 @@ wheels/
 venv/
 ENV/
 env/
+myenv/
+
+# Logs
+*.log
 
 # IDE
 .vscode/
