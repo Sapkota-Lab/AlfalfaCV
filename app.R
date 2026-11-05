@@ -57,8 +57,8 @@ ui <- page_fillable(
   theme = app_theme,
   title = "AlfalfaCV",
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "app.css?v=4"),
-    tags$script(src = "app.js?v=4")
+    tags$link(rel = "stylesheet", type = "text/css", href = "app.css?v=5"),
+    tags$script(src = "app.js?v=5")
   ),
   as_fill_carrier(
     div(
@@ -475,6 +475,15 @@ server <- function(input, output, session) {
     if (is.null(upload)) {
       return()
     }
+    # Hide Shiny's file progress after this observer finishes, including
+    # failures. The bar stays up while the request and this processing run.
+    on.exit(
+      session$sendCustomMessage(
+        "alfalfacv_upload_progress",
+        list(id = "seed_image")
+      ),
+      add = TRUE
+    )
 
     clear_image_artifacts()
     apply_image_record(.empty_image_record(

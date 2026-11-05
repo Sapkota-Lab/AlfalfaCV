@@ -163,6 +163,9 @@ test_that("phase 2 interface source keeps workflows and hides legacy controls", 
   expect_true(grepl("minmax\\(0, 1fr\\)", css))
   expect_false(grepl("object-fit:\\s*fill", css))
   expect_true(grepl("object-fit: contain", css))
+  expect_true(grepl("alfalfacv_upload_progress", app_src))
+  expect_true(grepl("alfalfacv_upload_progress", js))
+  expect_true(grepl("hideUploadProgress", js))
   expect_true(grepl("scrollJustHappened", js))
   expect_true(grepl("touch-action: pan-y", css))
 

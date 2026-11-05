@@ -497,4 +497,51 @@
   window.addEventListener("resize", function () {
     requestAnimationFrame(syncStages);
   });
+
+  function uploadProgressEl(id) {
+    return document.getElementById(id + "_progress");
+  }
+
+  function showUploadProgress(id) {
+    var el = uploadProgressEl(id);
+    if (!el) {
+      return;
+    }
+    el.style.display = "";
+    el.style.visibility = "visible";
+    el.classList.add("active");
+  }
+
+  function hideUploadProgress(id) {
+    var el = uploadProgressEl(id);
+    if (!el) {
+      return;
+    }
+    el.classList.remove("active");
+    el.style.visibility = "hidden";
+    el.style.display = "none";
+  }
+
+  document.addEventListener("change", function (event) {
+    var input = event.target;
+    if (!input || input.id !== "seed_image") {
+      return;
+    }
+    if (input.files && input.files.length) {
+      showUploadProgress("seed_image");
+    }
+  }, true);
+
+  function registerUploadProgress() {
+    if (!window.Shiny || !Shiny.addCustomMessageHandler || window.__alfalfacvUploadProgress) {
+      return;
+    }
+    window.__alfalfacvUploadProgress = true;
+    Shiny.addCustomMessageHandler("alfalfacv_upload_progress", function (msg) {
+      hideUploadProgress(msg && msg.id ? msg.id : "seed_image");
+    });
+  }
+
+  document.addEventListener("shiny:connected", registerUploadProgress);
+  registerUploadProgress();
 })();
